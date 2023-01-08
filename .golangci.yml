@@ -1,0 +1,157 @@
+run:
+  deadline: 10m
+  skip-files: [ ]
+  skip-dirs: [ ]
+
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+  gocyclo:
+    min-complexity: 15
+  maligned:
+    suggest-new: true
+  goconst:
+    min-len: 5
+    min-occurrences: 3
+  misspell:
+    locale: US
+  funlen:
+    lines: -1
+    statements: 50
+  godox:
+    keywords:
+      - FIXME
+  gofumpt:
+    extra-rules: true
+  depguard:
+    list-type: blacklist
+    include-go-root: false
+    packages:
+      - github.com/sirupsen/logrus
+      - github.com/pkg/errors
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+    disabled-checks:
+      - sloppyReassign
+      - rangeValCopy
+      - octalLiteral
+      - paramTypeCombine # already handle by gofumpt.extra-rules
+      - unnamedResult
+      - hugeParam
+  gomoddirectives:
+    replace-allow-list:
+      - github.com/abbot/go-http-auth
+  goheader:
+    values:
+      const:
+        COMPANY: Traefik Labs
+    template: |-
+      Copyright (C) {{ YEAR }} {{ COMPANY }}
+
+      This program is free software: you can redistribute it and/or modify
+      it under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License, or
+      (at your option) any later version.
+
+      This program is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+      GNU Affero General Public License for more details.
+
+      You should have received a copy of the GNU Affero General Public License
+      along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+linters:
+  enable-all: true
+  disable:
+    - maligned # deprecated
+    - interfacer # deprecated
+    - scopelint # deprecated
+    - golint # deprecated
+    - exhaustivestruct # deprecated
+    - ifshort # deprecated
+    - structcheck # deprecated
+    - varcheck # deprecated
+    - deadcode # deprecated
+    - nosnakecase # deprecated
+    - execinquery # not relevant (SQL)
+    - sqlclosecheck # not relevant (SQL)
+    - rowserrcheck # not relevant (SQL)
+    - cyclop # duplicate of gocyclo
+    - lll
+    - dupl
+    - wsl
+    - nlreturn
+    - gomnd
+    - goerr113
+    - wrapcheck
+    - exhaustive
+    - exhaustruct
+    - testpackage
+    - tparallel
+    - paralleltest
+    - prealloc
+    - forcetypeassert
+    - bodyclose # Too many false positives: https://github.com/timakin/bodyclose/issues/30
+    - ifshort # disable due to false-positive, the linter will be fixed https://github.com/esimonov/ifshort
+    - varnamelen
+    - nilnil
+    - ireturn
+    - errchkjson
+    - contextcheck
+    - nonamedreturns
+    - nilerr
+
+issues:
+  exclude-use-default: false
+  max-per-linter: 0
+  max-same-issues: 0
+  exclude:
+    - 'ST1000: at least one file in a package should have a package comment'
+    - 'G204: Subprocess launched with variable'
+    - 'G304: Potential file inclusion via variable'
+    - 'G102: Binds to all network interfaces'
+    - 'package-comments: should have a package comment'
+  exclude-rules:
+    - path: .*_test.go
+      linters:
+        - funlen
+        - noctx
+        - gochecknoinits
+        - gochecknoglobals
+        - maintidx
+        - nosnakecase
+        - gosec
+    - path: pkg/version/version.go
+      linters:
+        - gochecknoglobals
+    # No need for cryptographically secured number generation here.
+    - path: pkg/traefik/client.go
+      text: 'G404: Use of weak random number generator \(math/rand instead of crypto/rand\)'
+    - path: cmd/agent/run.go
+      linters:
+        - funlen
+    # InsecureSkipVerify option set true on purpose.
+    - path: pkg/traefik/client.go
+      text: 'G402: TLS InsecureSkipVerify set true.'
+    - path: pkg/platform/client_test.go
+      linters:
+        - gocognit
+    - path: pkg/acp/oidc/oidc.go
+      text: "Function 'ServeHTTP' has too many statements"
+      linters:
+        - funlen
+    # Reducing cyclomatic complexity would reduce readability.
+    - path: pkg/acp/oidc/oidc.go
+      text: "cyclomatic complexity 21 of func `(.*).ServeHTTP` is high"
+      linters:
+        - gocyclo
+    - path: cmd/agent/run.go
+      text: "cyclomatic complexity 16 of func `(.*).runAgent` is high"
+      linters:
+        - gocyclo
